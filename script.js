@@ -1,5 +1,5 @@
 let x = 0;
-
+let left = 100;
 // setInterval(moveCharacter, 75);
 
 
@@ -17,20 +17,24 @@ function checkKey(e) {
         // down arrow
     }
     else if (e.keyCode == '37') {
-       // left arrow
-       moveCharacter();
+        // left arrow
+        left -= 5;
+        moveCharacter();
+        orc.style.left = `${left}px`;
     }
     else if (e.keyCode == '39') {
-       // right arrow
-       moveCharacter();
+        // right arrow
+        left += 5;
+        moveCharacter();
+        orc.style.left = `${left}px`;
     }
 }
 
-function moveCharacter(){
+function moveCharacter() {
     orc.style = `object-position: -${x * 200}px;`;
     x++;
 
-    if(x == 7) {
+    if (x == 7) {
         x = 0;
     }
 }
