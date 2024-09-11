@@ -11,6 +11,7 @@ let attacking = false; // Gibt an, ob der Angriff gerade stattfindet
 let berserkLeft = window.innerWidth; // Startet außerhalb des sichtbaren Bereichs
 let berserkBottom = getRandomY(); // Zufällige Höhe für den Berserk
 let gameOver = false; // Zustand für Spielende
+let berserkHit = false;
 
 document.onkeydown = checkKey;
 document.onkeyup = unCheckKey;
@@ -74,12 +75,19 @@ function checkCollision() {
     // Überprüfen, ob Orc und Berserk kollidieren
     if (isCollision('orc', 'berserk')) {
         if (attacking) {
+            berserkHit = true;
             // Berserk stirbt
             clearInterval(berserkMovementInterval); // Berserk stoppt seine Bewegung
             berserk.src = "img/Orc_Berserk/Dead.png"; // Wechsle zu Berserk Todes-Animation
             berserkX = 0; // Startet bei Frame 0 der Todesanimation
             playBerserkDeathAnimation(); // Todesanimation abspielen
-        } else {
+            setTimeout(function(){
+                berserk.src = "img/Orc_Berserk/Run.png"; 
+                spawnBerserk();
+                berserkMovementInterval = setInterval(moveBerserk, 10); 
+                berserkHit = false;
+            }, 3000);
+        } else if(!berserkHit) {
             // Orc stirbt
             gameOver = true;
             orc.src = "img/Orc_Shaman/Dead.png"; // Wechsle zur Todesanimation für den Orc
