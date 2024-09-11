@@ -16,7 +16,7 @@ let berserkHit = false;
 document.onkeydown = checkKey;
 document.onkeyup = unCheckKey;
 
-setInterval(spawnBerserk, 5000);
+let spawnInterval = setInterval(spawnBerserk, 5000);
 
 function checkKey(e) {
     e = e || window.event;
@@ -74,19 +74,20 @@ function checkCollision() {
 
     // Überprüfen, ob Orc und Berserk kollidieren
     if (isCollision('orc', 'berserk')) {
-        if (attacking) {
+        if (attacking && !berserkHit) {
             berserkHit = true;
             // Berserk stirbt
             clearInterval(berserkMovementInterval); // Berserk stoppt seine Bewegung
+            clearInterval(spawnInterval);
             berserk.src = "img/Orc_Berserk/Dead.png"; // Wechsle zu Berserk Todes-Animation
             berserkX = 0; // Startet bei Frame 0 der Todesanimation
             playBerserkDeathAnimation(); // Todesanimation abspielen
             setTimeout(function(){
+                spawnBerserk(); 
                 berserk.src = "img/Orc_Berserk/Run.png"; 
-                spawnBerserk();
                 berserkMovementInterval = setInterval(moveBerserk, 10); 
                 berserkHit = false;
-            }, 3000);
+            }, 4000);
         } else if(!berserkHit) {
             // Orc stirbt
             gameOver = true;
@@ -122,16 +123,6 @@ function playBerserkDeathAnimation() {
 
         if (berserkX == 5) { // 5 Frames für die Berserk-Todesanimation
             clearInterval(deathAnimationInterval); // Beende die Animation nach dem letzten Frame
-            setTimeout(function() {
-                // Berserk verschwindet nach seiner Todesanimation
-                berserk.style.display = "none"; // Berserk unsichtbar machen
-                if (!gameOver) {
-                    setTimeout(() => {
-                        berserk.style.display = "block"; // Berserk wieder sichtbar machen beim Respawn
-                        spawnBerserk(); // Respawn des Berserk
-                    }, 3000); // Respawn nach 3 Sekunden
-                }
-            }, 200); // Zeit für das letzte Frame der Todesanimation
         }
     }, 100); // Geschwindigkeit der Todesanimation (angepasst für 5 Frames)
 }
@@ -186,7 +177,7 @@ function moveCharacter() {
 
 
 // Berserk auf zufälliger Höhe spawnen und sich bewegen lassen
-function spawnBerserk() {
+function spawnBerserk() { 
     berserkLeft = window.innerWidth; // Spawn außerhalb des sichtbaren Bereichs
     berserkBottom = getRandomY(); // Zufällige Y-Koordinate
     berserk.style.left = `${berserkLeft}px`;
