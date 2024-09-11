@@ -12,27 +12,42 @@ let berserkLeft = window.innerWidth; // Startet außerhalb des sichtbaren Bereic
 let berserkBottom = getRandomY(); // Zufällige Höhe für den Berserk
 let gameOver = false; // Zustand für Spielende
 let berserkHit = false;
-
+let backgroundMusic = new Audio('audio/lone-wolf.mp3');
+let audioRun = new Audio('audio/run.mp3');
+let audioAttack = new Audio('audio/small-monster-attack.mp3');
 document.onkeydown = checkKey;
 document.onkeyup = unCheckKey;
+
+
+backgroundMusic.addEventListener('ended', function () {
+    this.currentTime = 0;
+    this.play();
+}, false);
+
 
 let spawnInterval = setInterval(spawnBerserk, 5000);
 
 function checkKey(e) {
     e = e || window.event;
+    if (backgroundMusic.paused) {
+        // backgroundMusic.play();
+    }
 
     if (e.keyCode == '38') {
         topArrow = true;
+        audioRun.play();
     }
     else if (e.keyCode == '40') {
         bottomArrow = true;
+        audioRun.play();
     }
     else if (e.keyCode == '37') {
         leftArrow = true;
-
+        audioRun.play();
     }
     else if (e.keyCode == '39') {
         rightArrow = true;
+        audioRun.play();
     } else if (e.keyCode == '68') { // 'd' Taste
         if (!attacking) {
             attack = true;
@@ -52,16 +67,23 @@ function unCheckKey(e) {
 
     if (e.keyCode == '38') {
         topArrow = false;
+        audioRun.pause();
+        audioRun.currentTime = 0;
     }
     else if (e.keyCode == '40') {
         bottomArrow = false;
+        audioRun.pause();
+        audioRun.currentTime = 0;
     }
     else if (e.keyCode == '37') {
         leftArrow = false;
-
+        audioRun.pause();
+        audioRun.currentTime = 0;
     }
     else if (e.keyCode == '39') {
         rightArrow = false;
+        audioRun.pause();
+        audioRun.currentTime = 0;
     }
 }
 
@@ -76,19 +98,21 @@ function checkCollision() {
     if (isCollision('orc', 'berserk')) {
         if (attacking && !berserkHit) {
             berserkHit = true;
+            audioAttack.currentTime = 0;
+            audioAttack.play();
             // Berserk stirbt
             clearInterval(berserkMovementInterval); // Berserk stoppt seine Bewegung
             clearInterval(spawnInterval);
             berserk.src = "img/Orc_Berserk/Dead.png"; // Wechsle zu Berserk Todes-Animation
             berserkX = 0; // Startet bei Frame 0 der Todesanimation
             playBerserkDeathAnimation(); // Todesanimation abspielen
-            setTimeout(function(){
-                spawnBerserk(); 
-                berserk.src = "img/Orc_Berserk/Run.png"; 
-                berserkMovementInterval = setInterval(moveBerserk, 10); 
+            setTimeout(function () {
+                spawnBerserk();
+                berserk.src = "img/Orc_Berserk/Run.png";
+                berserkMovementInterval = setInterval(moveBerserk, 10);
                 berserkHit = false;
             }, 4000);
-        } else if(!berserkHit) {
+        } else if (!berserkHit) {
             // Orc stirbt
             gameOver = true;
             orc.src = "img/Orc_Shaman/Dead.png"; // Wechsle zur Todesanimation für den Orc
@@ -109,15 +133,15 @@ function isCollision(img1Id, img2Id) {
     const img1 = document.getElementById(img1Id).getBoundingClientRect();
     const img2 = document.getElementById(img2Id).getBoundingClientRect();
 
-    return !(img1.right < img2.left || 
-             img1.left > img2.right || 
-             img1.bottom < img2.top || 
-             img1.top > img2.bottom);
+    return !(img1.right < img2.left ||
+        img1.left > img2.right ||
+        img1.bottom < img2.top ||
+        img1.top > img2.bottom);
 }
 
 // Funktion zur Abspielung der Berserk-Todesanimation
 function playBerserkDeathAnimation() {
-    let deathAnimationInterval = setInterval(function() {
+    let deathAnimationInterval = setInterval(function () {
         berserk.style.objectPosition = `-${berserkX * 100}px`; // Setze die Position des Bildes basierend auf dem Frame
         berserkX++;
 
@@ -177,7 +201,7 @@ function moveCharacter() {
 
 
 // Berserk auf zufälliger Höhe spawnen und sich bewegen lassen
-function spawnBerserk() { 
+function spawnBerserk() {
     berserkLeft = window.innerWidth; // Spawn außerhalb des sichtbaren Bereichs
     berserkBottom = getRandomY(); // Zufällige Y-Koordinate
     berserk.style.left = `${berserkLeft}px`;
