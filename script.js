@@ -10,6 +10,7 @@ let attack = false; // Neuer Zustand für den Angriff
 let attacking = false; // Gibt an, ob der Angriff gerade stattfindet
 let berserkLeft = window.innerWidth; // Startet außerhalb des sichtbaren Bereichs
 let berserkBottom = getRandomY(); // Zufällige Höhe für den Berserk
+let gameOver = false; // Zustand für Spielende
 
 document.onkeydown = checkKey;
 document.onkeyup = unCheckKey;
@@ -64,7 +65,69 @@ function unCheckKey(e) {
 }
 
 setInterval(updateGame, 15);
-setInterval(moveBerserk, 10);
+let berserkMovementInterval = setInterval(moveBerserk, 10);
+setInterval(checkCollision, 15); // Überprüft kontinuierlich auf Kollisionen
+
+function checkCollision() {
+    if (gameOver) return;
+
+    // Überprüfen, ob Orc und Berserk kollidieren
+    if (isCollision('orc', 'berserk')) {
+        if (attacking) {
+            // Berserk stirbt
+            clearInterval(berserkMovementInterval); // Berserk stoppt seine Bewegung
+            berserk.src = "img/Orc_Berserk/Dead.png"; // Wechsle zu Berserk Todes-Animation
+            berserkX = 0; // Startet bei Frame 0 der Todesanimation
+            playBerserkDeathAnimation(); // Todesanimation abspielen
+        } else {
+            // Orc stirbt
+            gameOver = true;
+            orc.src = "img/Orc_Shaman/Dead.png"; // Wechsle zur Todesanimation für den Orc
+            clearInterval(berserkMovementInterval); // Berserk stoppt ebenfalls, wenn das Spiel vorbei ist
+            setTimeout(moveCharacter, 15);
+            setTimeout(moveCharacter, 30);
+            setTimeout(moveCharacter, 45);
+            setTimeout(moveCharacter, 60);
+            setTimeout(moveCharacter, 75);
+            setTimeout(() => {
+                alert("Game Over"); // Spielende Nachricht
+            }, 500); // Zeit für das Abspielen der Todesanimation
+        }
+    }
+}
+
+function isCollision(img1Id, img2Id) {
+    const img1 = document.getElementById(img1Id).getBoundingClientRect();
+    const img2 = document.getElementById(img2Id).getBoundingClientRect();
+
+    return !(img1.right < img2.left || 
+             img1.left > img2.right || 
+             img1.bottom < img2.top || 
+             img1.top > img2.bottom);
+}
+
+// Funktion zur Abspielung der Berserk-Todesanimation
+function playBerserkDeathAnimation() {
+    let deathAnimationInterval = setInterval(function() {
+        berserk.style.objectPosition = `-${berserkX * 100}px`; // Setze die Position des Bildes basierend auf dem Frame
+        berserkX++;
+
+        if (berserkX == 5) { // 5 Frames für die Berserk-Todesanimation
+            clearInterval(deathAnimationInterval); // Beende die Animation nach dem letzten Frame
+            setTimeout(function() {
+                // Berserk verschwindet nach seiner Todesanimation
+                berserk.style.display = "none"; // Berserk unsichtbar machen
+                if (!gameOver) {
+                    setTimeout(() => {
+                        berserk.style.display = "block"; // Berserk wieder sichtbar machen beim Respawn
+                        spawnBerserk(); // Respawn des Berserk
+                    }, 3000); // Respawn nach 3 Sekunden
+                }
+            }, 200); // Zeit für das letzte Frame der Todesanimation
+        }
+    }, 100); // Geschwindigkeit der Todesanimation (angepasst für 5 Frames)
+}
+
 function updateGame() {
     if (attacking) {
         moveAttack(); // Animation des Angriffs
